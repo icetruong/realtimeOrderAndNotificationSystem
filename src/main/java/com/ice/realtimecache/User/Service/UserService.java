@@ -1,6 +1,5 @@
 package com.ice.realtimecache.User.Service;
-
-import com.ice.realtimecache.Common.Exception.EmailAlreadyExistsException;
+import com.ice.realtimecache.Common.Exception.ResourceNotFoundException;
 import com.ice.realtimecache.User.Entity.Role;
 import com.ice.realtimecache.User.Entity.User;
 import com.ice.realtimecache.User.Repository.UserRepo;
@@ -18,7 +17,7 @@ public class UserService {
     {
         String normalizedEmail = email == null ? null : email.trim().toLowerCase();
         if (normalizedEmail != null && userRepo.existsByEmail(normalizedEmail)) {
-            throw new EmailAlreadyExistsException("Email already exists");
+            throw new ResourceNotFoundException("Email already exists");
         }
 
         User u = User.builder()
