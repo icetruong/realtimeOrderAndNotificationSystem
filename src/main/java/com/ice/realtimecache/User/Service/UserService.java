@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class UserService {
     private final UserRepo userRepo;
 
-    public User addUser(String name, String email, String password)
+    public void addUser(String name, String email, String password)
     {
         User u = User.builder()
                 .fullName(name)
@@ -22,6 +22,11 @@ public class UserService {
                 .role(Role.USER)
                 .createdAt(LocalDateTime.now())
                 .build();
-        return userRepo.save(u);
+        userRepo.save(u);
+    }
+
+    public User getUser(String username)
+    {
+        return userRepo.findByFullName(username);
     }
 }
