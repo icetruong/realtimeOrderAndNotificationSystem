@@ -4,14 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,17 +16,16 @@ import java.util.function.Function;
 
 @Service
 public class JWTService {
-    private String secretKey = "";
+    private final SecretKey signingKey;
+    private final long expirationMs;
 
-    public JWTService()
-    {
-        try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
-            SecretKey sk = keyGenerator.generateKey();
-            secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+    public JWTService(
+            @Value("${security.jwt.secret}") String secretKey,
+            @Value("${security.jwt.expiration-ms:108000000}") long expirationMs
+    ) {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        this.expirationMs = expirationMs;
     }
 
     public String generateToken(String name) {
@@ -40,17 +36,11 @@ public class JWTService {
                 .add(claims)
                 .subject(name)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60*60*30*1000))
+                .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .and()
-                .signWith(getKey())
+                .signWith(signingKey)
                 .compact();
 
-    }
-
-    private Key getKey()
-    {
-        byte[] keyByte = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyByte);
     }
 
     public String extractUsername(String token) {
@@ -64,7 +54,7 @@ public class JWTService {
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
         Claims claims = Jwts.parser()
-                .verifyWith((SecretKey) getKey())
+                .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

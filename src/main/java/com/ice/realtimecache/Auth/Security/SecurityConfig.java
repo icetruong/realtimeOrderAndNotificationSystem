@@ -42,6 +42,7 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    @Bean
     public AuthenticationProvider authenticationProvider()
     {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
