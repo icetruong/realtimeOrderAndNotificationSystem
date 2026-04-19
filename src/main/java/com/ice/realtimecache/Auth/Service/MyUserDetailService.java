@@ -15,11 +15,10 @@ public class MyUserDetailService implements UserDetailsService {
     private final UserService userService;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User u = userService.getUser(username);
+        User u = userService.getUserByEmail(username);
 
         if(u == null)
         {
-            System.out.println("Not found user");
             throw new UsernameNotFoundException("User not found");
         }
 

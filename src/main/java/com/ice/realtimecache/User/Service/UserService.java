@@ -1,5 +1,6 @@
 package com.ice.realtimecache.User.Service;
 
+import com.ice.realtimecache.Common.Exception.EmailAlreadyExistsException;
 import com.ice.realtimecache.User.Entity.Role;
 import com.ice.realtimecache.User.Entity.User;
 import com.ice.realtimecache.User.Repository.UserRepo;
@@ -15,9 +16,14 @@ public class UserService {
 
     public void addUser(String name, String email, String password)
     {
+        String normalizedEmail = email == null ? null : email.trim().toLowerCase();
+        if (normalizedEmail != null && userRepo.existsByEmail(normalizedEmail)) {
+            throw new EmailAlreadyExistsException("Email already exists");
+        }
+
         User u = User.builder()
                 .fullName(name)
-                .email(email)
+                .email(normalizedEmail)
                 .password(password)
                 .role(Role.USER)
                 .createdAt(LocalDateTime.now())
@@ -25,8 +31,12 @@ public class UserService {
         userRepo.save(u);
     }
 
-    public User getUser(String username)
+    public User getUserByEmail(String email)
     {
-        return userRepo.findByFullName(username);
+        String normalizedEmail = email == null ? null : email.trim().toLowerCase();
+        if (normalizedEmail == null) {
+            return null;
+        }
+        return userRepo.findByEmail(normalizedEmail).orElse(null);
     }
 }

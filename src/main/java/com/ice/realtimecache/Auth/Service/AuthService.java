@@ -6,7 +6,6 @@ import com.ice.realtimecache.User.Service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +21,10 @@ public class AuthService {
     }
 
     public String verify(LoginRequest request) {
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getName(), request.getPassword())
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+        authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(normalizedEmail, request.getPassword())
         );
-
-        if(authentication.isAuthenticated())
-            return jwtService.generateToken(request.getName());
-
-        return "false";
+        return jwtService.generateToken(normalizedEmail);
     }
 }
