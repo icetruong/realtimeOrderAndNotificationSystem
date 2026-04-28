@@ -1,8 +1,7 @@
 package com.ice.realtimecache.Order.Service;
 
-import com.ice.realtimecache.Order.DTO.CreateOrderRequest;
-import com.ice.realtimecache.Order.DTO.OrderItemResponse;
-import com.ice.realtimecache.Order.DTO.OrderResponse;
+import com.ice.realtimecache.Common.Config.KafkaTopics;
+import com.ice.realtimecache.Order.DTO.*;
 import com.ice.realtimecache.Order.Entity.Order;
 import com.ice.realtimecache.Order.Entity.OrderItem;
 import com.ice.realtimecache.Order.Entity.OrderStatus;
@@ -13,6 +12,7 @@ import com.ice.realtimecache.Product.Repository.ProductRepo;
 import com.ice.realtimecache.User.Entity.User;
 import com.ice.realtimecache.User.Repository.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +27,8 @@ public class OrderService {
     private final OrderRepo orderRepo;
     private final UserRepo userRepo;
     private final ProductRepo productRepo;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public OrderResponse createOrder(String email,CreateOrderRequest request)
@@ -64,6 +66,9 @@ public class OrderService {
         orderRepo.save(order);
         orderItemRepo.saveAll(orderItem);
 
+        OrderCreatedEvent event = new OrderCreatedEvent(order.getId(), order.getUser().getId(), order.getUser().getEmail(), order.getTotalAmount());
+        kafkaTemplate.send(KafkaTopics.ORDER_CREATED, event);
+
         return toResponse(order);
     }
 
@@ -88,9 +93,11 @@ public class OrderService {
     {
         Order order = orderRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("not found order"));
+        OrderStatusUpdateEvent event = new OrderStatusUpdateEvent(order.getId(), order.getUser().getId(), order.getUser().getEmail(), order.getStatus(), status);
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepo.save(order);
+        kafkaTemplate.send(KafkaTopics.ORDER_STATUS_UPDATED, event);
         return toResponse(order);
     }
 
