@@ -1,6 +1,6 @@
 package com.ice.realtimecache.Product.Entity;
 
-import com.ice.realtimecache.Order.DTO.OrderItem;
+import com.ice.realtimecache.Order.Entity.OrderItem;
 import jakarta.persistence.*;
 import lombok.*;
 
