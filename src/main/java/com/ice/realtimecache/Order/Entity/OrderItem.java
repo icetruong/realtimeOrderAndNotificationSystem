@@ -1,4 +1,4 @@
-package com.ice.realtimecache.Order.DTO;
+package com.ice.realtimecache.Order.Entity;
 
 import com.ice.realtimecache.Product.Entity.Product;
 import jakarta.persistence.*;

@@ -1,7 +1,7 @@
 package com.ice.realtimecache.User.Entity;
 
 import com.ice.realtimecache.Notification.Entity.Notification;
-import com.ice.realtimecache.Order.DTO.Order;
+import com.ice.realtimecache.Order.Entity.Order;
 import jakarta.persistence.*;
 import lombok.*;
 

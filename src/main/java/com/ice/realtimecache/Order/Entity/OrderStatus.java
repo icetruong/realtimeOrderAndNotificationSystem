@@ -1,4 +1,4 @@
-package com.ice.realtimecache.Order.DTO;
+package com.ice.realtimecache.Order.Entity;
 
 public enum OrderStatus {
     CREATED,
